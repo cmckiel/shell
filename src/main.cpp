@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -8,6 +9,8 @@ int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
+
+  std::vector<std::string> builtin_commands = { "exit", "echo", "type" };
 
   while (1) {
     std::cout << "$ ";
@@ -36,8 +39,21 @@ int main() {
         }
         std::cout << std::endl;
       }
+      else if (command == "type") {
+        try {
+          std::string command_in_question = tokenized_input.at(1);
+          if (std::ranges::contains(builtin_commands, command_in_question)) {
+            std::cout << command_in_question << " is a shell builtin" << std::endl;
+          }
+          else {
+            std::cout << command_in_question << ": command not found" << std::endl;
+          }
+        } catch (std::exception& e) {
+          std::cout << "type: requires argument" << std::endl;
+        }
+      }
       else {
-        std::cout << tokenized_input.at(0) << ": command not found" << std::endl;
+        std::cout << command << ": command not found" << std::endl;
       }
     }
   }
