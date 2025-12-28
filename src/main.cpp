@@ -46,7 +46,7 @@ int main() {
             std::cout << command_in_question << " is a shell builtin" << std::endl;
           }
           else {
-            std::cout << command_in_question << ": command not found" << std::endl;
+            std::cout << command_in_question << ": not found" << std::endl;
           }
         } catch (std::exception& e) {
           std::cout << "type: requires argument" << std::endl;
