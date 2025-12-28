@@ -1,23 +1,44 @@
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <vector>
+#include <ranges>
 
 int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  while (1)
-  {
+  while (1) {
     std::cout << "$ ";
 
+    // Get the command input line
     std::string input;
     std::getline(std::cin, input);
-    if (input.size() > 0)
-    {
-      if (input == "exit")
-        return 0;
 
-      std::cout << input << ": command not found" << std::endl;
+    // Tokenize the input
+    std::istringstream iss(input);
+    std::vector<std::string> tokenized_input;
+
+    std::string word;
+    while (iss >> word) {
+      tokenized_input.push_back(word);
+    }
+
+    // Parse and execute the command
+    if (tokenized_input.size() > 0) {
+      if (auto command = tokenized_input.at(0); command == "exit") {
+        return 0;
+      }
+      else if (command == "echo") {
+        for (const auto& token : tokenized_input | std::views::drop(1)) {
+          std::cout << token << " ";
+        }
+        std::cout << std::endl;
+      }
+      else {
+        std::cout << tokenized_input.at(0) << ": command not found" << std::endl;
+      }
     }
   }
 }
