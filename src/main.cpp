@@ -1,56 +1,48 @@
-#include <algorithm>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <ranges>
+#include <memory>
+#include <unordered_map>
+
+#include "Commands.hpp"
 
 int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  std::vector<std::string> builtin_commands = { "exit", "echo", "type" };
+  std::unordered_map<std::string, std::unique_ptr<Command>> command_parser;
+
+  command_parser.emplace("exit", std::make_unique<Exit>());
+  command_parser.emplace("echo", std::make_unique<Echo>());
+  command_parser.emplace("type", std::make_unique<Type>(command_parser));
 
   while (1) {
     std::cout << "$ ";
 
-    // Get the command input line
+    // read the command line
     std::string input;
     std::getline(std::cin, input);
 
-    // Tokenize the input
-    std::istringstream iss(input);
-    std::vector<std::string> tokenized_input;
+    // tokenize the input
+    std::vector<std::string> tokens;
 
-    std::string word;
-    while (iss >> word) {
-      tokenized_input.push_back(word);
+    std::istringstream iss(input);
+    std::string token;
+    while (iss >> token) {
+      tokens.push_back(token);
     }
 
-    // Parse and execute the command
-    if (tokenized_input.size() > 0) {
-      if (auto command = tokenized_input.at(0); command == "exit") {
-        return 0;
-      }
-      else if (command == "echo") {
-        for (const auto& token : tokenized_input | std::views::drop(1)) {
-          std::cout << token << " ";
-        }
-        std::cout << std::endl;
-      }
-      else if (command == "type") {
-        try {
-          std::string command_in_question = tokenized_input.at(1);
-          if (std::ranges::contains(builtin_commands, command_in_question)) {
-            std::cout << command_in_question << " is a shell builtin" << std::endl;
-          }
-          else {
-            std::cout << command_in_question << ": not found" << std::endl;
-          }
-        } catch (std::exception& e) {
-          std::cout << "type: requires argument" << std::endl;
-        }
+    // parse the input and execute the command
+    if (!tokens.empty()) {
+      // separate command and arguments
+      std::string command = tokens[0];
+      std::vector<std::string> args(tokens.begin() + 1, tokens.end());
+
+      if (command_parser.contains(command)) {
+        auto& command_handler = command_parser.at(command);
+        command_handler->execute(args);
       }
       else {
         std::cout << command << ": command not found" << std::endl;
