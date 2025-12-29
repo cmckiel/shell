@@ -21,6 +21,19 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
     auto& command_handler = shell_builtins_.at(command);
     command_handler->execute(args);
   }
+  else if (std::string command_path; find_on_system(command, command_path)) {
+    std::ostringstream oss;
+
+    oss << command << " ";
+    for (auto& arg : args) {
+      oss << arg << " ";
+    }
+
+    std::string full_command_with_args = oss.str();
+    const char* full_command_with_args_cstring = full_command_with_args.c_str();
+
+    std::system(full_command_with_args_cstring);
+  }
   else {
     std::cout << command << ": command not found" << std::endl;
   }
