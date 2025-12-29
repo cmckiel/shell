@@ -70,6 +70,20 @@ bool CdCommand::execute(const std::vector<std::string>& args) {
 
   try {
     desired_working_dir = args.empty() ? "" : args[0];
+
+    if (desired_working_dir == "~") {
+      const char *home_env = std::getenv("HOME");
+
+      if (home_env == nullptr) {
+        std::cerr << "HOME environment variable not found." << std::endl;
+        return false;
+      }
+
+      std::string home_path(home_env);
+
+      desired_working_dir = home_path;
+    }
+
     fs::current_path(desired_working_dir);
   }
   catch (std::exception& e) {
