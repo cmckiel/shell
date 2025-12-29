@@ -2,21 +2,15 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <memory>
-#include <unordered_map>
 
-#include "Commands.hpp"
+#include "CommandParser.hpp"
 
 int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  std::unordered_map<std::string, std::unique_ptr<Command>> command_parser;
-
-  command_parser.emplace("exit", std::make_unique<Exit>());
-  command_parser.emplace("echo", std::make_unique<Echo>());
-  command_parser.emplace("type", std::make_unique<Type>(command_parser));
+  CommandParser command_parser;
 
   while (1) {
     std::cout << "$ ";
@@ -26,27 +20,21 @@ int main() {
     std::getline(std::cin, input);
 
     // tokenize the input
-    std::vector<std::string> tokens;
+    std::vector<std::string> input_tokens;
 
     std::istringstream iss(input);
     std::string token;
     while (iss >> token) {
-      tokens.push_back(token);
+      input_tokens.push_back(token);
     }
 
     // parse the input and execute the command
-    if (!tokens.empty()) {
+    if (!input_tokens.empty()) {
       // separate command and arguments
-      std::string command = tokens[0];
-      std::vector<std::string> args(tokens.begin() + 1, tokens.end());
+      std::string command = input_tokens[0];
+      std::vector<std::string> args(input_tokens.begin() + 1, input_tokens.end());
 
-      if (command_parser.contains(command)) {
-        auto& command_handler = command_parser.at(command);
-        command_handler->execute(args);
-      }
-      else {
-        std::cout << command << ": command not found" << std::endl;
-      }
+      command_parser.execute(command, args);
     }
   }
 }

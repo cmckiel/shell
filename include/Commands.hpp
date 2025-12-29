@@ -4,21 +4,22 @@
 #include <unordered_map>
 
 #include "Command.hpp"
+#include "CommandParser.hpp"
 
-class Echo : public Command {
+class EchoCommand : public Command {
   public:
-    bool execute(std::vector<std::string>& args) override final;
+    bool execute(const std::vector<std::string>& args) override final;
 };
 
-class Exit : public Command {
+class ExitCommand : public Command {
   public:
-    bool execute(std::vector<std::string>& args) override final;
+    bool execute(const std::vector<std::string>& args) override final;
 };
 
-class Type : public Command {
+class TypeCommand : public Command {
   public:
-    Type(std::unordered_map<std::string, std::unique_ptr<Command>>& command_parser);
-    bool execute(std::vector<std::string>& args) override final;
+    TypeCommand(CommandParser& parser);
+    bool execute(const std::vector<std::string>& args) override final;
   private:
-    std::unordered_map<std::string, std::unique_ptr<Command>>& command_parser_;
+    CommandParser& command_parser_;
 };
