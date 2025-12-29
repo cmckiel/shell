@@ -57,9 +57,20 @@ bool find_command_on_system(const std::string& command, std::string& command_pat
       });
 
       if (found != fs::end(it)) {
-        command_path = found->path();
-        res = true;
-        break;
+        auto file = found->path();
+        fs::file_status fstatus = fs::status(file);
+        fs::perms fperms = fstatus.permissions();
+
+        // Check if any executable bit is set (Owner, Group, or Others)
+        bool is_executable = (fperms & fs::perms::owner_exec) != fs::perms::none ||
+                             (fperms & fs::perms::group_exec) != fs::perms::none ||
+                             (fperms & fs::perms::others_exec) != fs::perms::none;
+
+        if (is_executable) {
+          command_path = file;
+          res = true;
+          break;
+        }
       }
     }
     catch (std::exception& e) {
