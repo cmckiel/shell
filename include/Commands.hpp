@@ -28,3 +28,8 @@ class PwdCommand : public Command {
   public:
     bool execute(const std::vector<std::string>& args) override final;
 };
+
+class CdCommand : public Command {
+  public:
+    bool execute(const std::vector<std::string>& args) override final;
+};

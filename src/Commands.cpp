@@ -62,3 +62,20 @@ bool PwdCommand::execute(const std::vector<std::string>& args) {
 
   return res;
 }
+
+bool CdCommand::execute(const std::vector<std::string>& args) {
+  bool res = true;
+
+  std::string desired_working_dir = "";
+
+  try {
+    desired_working_dir = args.empty() ? "" : args[0];
+    fs::current_path(desired_working_dir);
+  }
+  catch (std::exception& e) {
+    std::cout << "cd: " << desired_working_dir << ": No such file or directory" << std::endl;
+    res = false;
+  }
+
+  return res;
+}
