@@ -12,6 +12,7 @@ CommandParser::CommandParser() {
   shell_builtins_.emplace("exit", std::make_unique<ExitCommand>());
   shell_builtins_.emplace("echo", std::make_unique<EchoCommand>());
   shell_builtins_.emplace("type", std::make_unique<TypeCommand>(*this));
+  shell_builtins_.emplace("pwd", std::make_unique<PwdCommand>());
 }
 
 bool CommandParser::execute(const std::string& command, const std::vector<std::string>& args) {

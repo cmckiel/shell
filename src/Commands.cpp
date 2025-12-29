@@ -47,3 +47,18 @@ bool TypeCommand::execute(const std::vector<std::string>& args) {
 
   return res;
 }
+
+bool PwdCommand::execute(const std::vector<std::string>& args) {
+  bool res = true;
+
+  try {
+    fs::path current_dir = fs::current_path();
+    std::cout << current_dir.string() << std::endl;
+  }
+  catch (std::exception& e) {
+    std::cout << "Error fetching current directory" << std::endl;
+    res = false;
+  }
+
+  return res;
+}
