@@ -15,27 +15,25 @@ CommandParser::CommandParser() {
 }
 
 bool CommandParser::execute(const std::string& command, const std::vector<std::string>& args) {
-  bool res = false;
+  bool res = true;
 
   if (shell_builtins_.contains(command)) {
     auto& command_handler = shell_builtins_.at(command);
     command_handler->execute(args);
   }
   else if (std::string command_path; find_on_system(command, command_path)) {
-    std::ostringstream oss;
+    std::ostringstream full_command_with_args;
 
-    oss << command << " ";
+    full_command_with_args << command << " ";
     for (auto& arg : args) {
-      oss << arg << " ";
+      full_command_with_args << arg << " ";
     }
 
-    std::string full_command_with_args = oss.str();
-    const char* full_command_with_args_cstring = full_command_with_args.c_str();
-
-    std::system(full_command_with_args_cstring);
+    std::system(full_command_with_args.str().c_str());
   }
   else {
     std::cout << command << ": command not found" << std::endl;
+    res = false;
   }
 
   return res;
