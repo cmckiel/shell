@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <utility>
 
 #include "CommandParser.hpp"
 
@@ -25,8 +26,31 @@ int main() {
 
     bool inside_word = false;
     bool inside_single_quote = false;
+    bool just_pushed_single_quote_token = false;
+    char last_char;
 
     for (char c : input) {
+      if (just_pushed_single_quote_token && c == '\'') {
+        // great, it seems we've got back to back quotes.
+        // now, we need to take out the previous token and
+        // continue adding to it.
+        if (!input_tokens.empty()) {
+          token = std::move(input_tokens.back());
+          input_tokens.pop_back();
+          just_pushed_single_quote_token = false;
+          inside_word = true;
+          inside_single_quote = true;
+          continue;
+        }
+      }
+      else if (just_pushed_single_quote_token) {
+        // Okay, so last time we pushed a token surrounded by single
+        // quotes but the next char we encountered afterwards is not
+        // another single quote. Therefore, unset the flag and leave
+        // things as they were.
+        just_pushed_single_quote_token = false;
+      }
+
       // suck up all the spaces
       if (!inside_word && c == ' ' && !inside_single_quote) {
         continue;
@@ -47,8 +71,21 @@ int main() {
           (inside_single_quote && inside_word && c == '\'')) {
         input_tokens.push_back(token);
         token = "";
+
+        // We need to remember if we just pushed a single quote token,
+        // because if we immediately encounter another single quote we
+        // need to combine these tokens.
+        if (inside_single_quote) {
+          just_pushed_single_quote_token = true;
+        }
+        
         inside_word = false;
         inside_single_quote = false;
+
+        continue;
+      }
+      else if (!inside_single_quote && inside_word && c == '\'') {
+        // skip single quotes and just glue normal words together
         continue;
       }
 
