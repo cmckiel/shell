@@ -21,12 +21,52 @@ int main() {
 
     // tokenize the input
     std::vector<std::string> input_tokens;
-
-    std::istringstream iss(input);
     std::string token;
-    while (iss >> token) {
-      input_tokens.push_back(token);
+
+    bool inside_word = false;
+    bool inside_single_quote = false;
+
+    for (char c : input) {
+      // suck up all the spaces
+      if (!inside_word && c == ' ' && !inside_single_quote) {
+        continue;
+      }
+      else if (!inside_word) {
+        // rising edge of word
+        inside_word = true;
+
+        // rising edge of single quote
+        if (c == '\'') {
+          inside_single_quote = true;
+          continue;
+        }
+      }
+
+      // falling edge of word
+      if ((!inside_single_quote && inside_word && c == ' ') ||
+          (inside_single_quote && inside_word && c == '\'')) {
+        input_tokens.push_back(token);
+        token = "";
+        inside_word = false;
+        inside_single_quote = false;
+        continue;
+      }
+
+      // Build the token, character by character.
+      token.push_back(c);
     }
+
+    if (token != "") {
+      input_tokens.push_back(token);
+      token = "";
+    }
+
+    // todo: rm this
+//    std::cout << "TOKENS RECEIVED" << std::endl;
+//    for (auto tok : input_tokens) {
+//      std::cout << "'" << tok << "'" << " " << std::endl;
+//    }
+//    std::cout << "TOKENS END" << std::endl;
 
     // parse the input and execute the command
     if (!input_tokens.empty()) {
