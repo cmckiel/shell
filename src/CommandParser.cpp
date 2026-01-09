@@ -29,7 +29,7 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
 
     full_command_with_args << command << " ";
     for (auto& arg : args) {
-      full_command_with_args << arg << " ";
+      full_command_with_args << "\'" << arg << "\'" << " ";
     }
 
     std::system(full_command_with_args.str().c_str());
