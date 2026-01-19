@@ -28,8 +28,17 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
     std::ostringstream full_command_with_args;
 
     full_command_with_args << command << " ";
+
     for (auto& arg : args) {
-      full_command_with_args << "\'" << arg << "\'" << " ";
+      if (arg.contains('\"')) {
+        full_command_with_args << "\'" << arg << "\'" << " ";
+      }
+      else if (arg.contains('\'')) {
+        full_command_with_args << "\"" << arg << "\"" << " ";
+      }
+      else {
+        full_command_with_args << arg << " ";
+      }
     }
 
     std::system(full_command_with_args.str().c_str());
