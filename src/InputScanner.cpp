@@ -1,5 +1,46 @@
 #include "InputScanner.hpp"
 
+InputScanner::InputScanner() {
+  transition_table = {
+    {State::base, {
+      {CharType::double_quote, State::inside_double_quote},
+      {CharType::single_quote, State::inside_single_quote},
+      {CharType::space,        State::base},
+      {CharType::other,        State::inside_word},
+    }},
+    {State::inside_word, {
+      {CharType::double_quote, State::inside_double_quote},
+      {CharType::single_quote, State::inside_single_quote},
+      {CharType::space,        State::base},
+      {CharType::other,        State::inside_word},
+    }},
+    {State::inside_single_quote, {
+      {CharType::double_quote, State::inside_single_quote},
+      {CharType::single_quote, State::just_finished_single_quote},
+      {CharType::space,        State::inside_single_quote},
+      {CharType::other,        State::inside_single_quote},
+    }},
+    {State::just_finished_single_quote, {
+      {CharType::double_quote, State::inside_double_quote},
+      {CharType::single_quote, State::inside_single_quote},
+      {CharType::space,        State::base},
+      {CharType::other,        State::inside_word},
+    }},
+    {State::inside_double_quote, {
+      {CharType::double_quote, State::just_finished_double_quote},
+      {CharType::single_quote, State::inside_double_quote},
+      {CharType::space,        State::inside_double_quote},
+      {CharType::other,        State::inside_double_quote},
+    }},
+    {State::just_finished_double_quote, {
+      {CharType::double_quote, State::inside_double_quote},
+      {CharType::single_quote, State::inside_single_quote},
+      {CharType::space,        State::base},
+      {CharType::other,        State::inside_word},
+    }},
+  };
+}
+
 std::vector<std::string> InputScanner::scan(std::string input) {
   std::string token;
   std::vector<std::string> tokens;
@@ -48,43 +89,22 @@ std::vector<std::string> InputScanner::scan(std::string input) {
 
 bool InputScanner::transition_state(State& state, char c) {
   State previous_state = state;
+  CharType char_type;
 
-  if (state == State::base) {
-    if (c == '\'') {
-      state = State::inside_single_quote;
-    }
-    else if (c != ' ') {
-      state = State::inside_word;
-    }
+  if (c == '\"') {
+    char_type = CharType::double_quote;
   }
-  else if (state == State::inside_word) {
-    if (c == '\'') {
-      state = State::inside_single_quote;
-    }
-    else if (c == ' ') {
-      state = State::base;
-    }
+  else if (c == '\'') {
+    char_type = CharType::single_quote;
   }
-  else if (state == State::inside_single_quote) {
-    if (c == '\'') {
-      state = State::just_finished_single_quote;
-    }
-  }
-  else if (state == State::just_finished_single_quote) {
-    if (c == '\'') {
-      state = State::inside_single_quote;
-    }
-    else if (c == ' ') {
-      state = State::base;
-    }
-    else {
-      state = State::inside_word;
-    }
+  else if (c == ' ') {
+    char_type = CharType::space;
   }
   else {
-    // Unknown state
-    return false;
+    char_type = CharType::other;
   }
+
+  state = transition_table[state][char_type];
 
   // Return true if the state changed.
   return (previous_state != state);
