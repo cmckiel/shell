@@ -30,14 +30,11 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
     full_command_with_args << command << " ";
 
     for (auto& arg : args) {
-      if (arg.contains('\"')) {
-        full_command_with_args << "\'" << arg << "\'" << " ";
-      }
-      else if (arg.contains('\'')) {
+      if (arg.contains('\'')) {
         full_command_with_args << "\"" << arg << "\"" << " ";
       }
       else {
-        full_command_with_args << arg << " ";
+        full_command_with_args << "\'" << arg << "\'" << " ";
       }
     }
 
