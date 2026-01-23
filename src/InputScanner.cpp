@@ -51,7 +51,7 @@ std::vector<std::string> InputScanner::scan(std::string input) {
   for (auto c : input) {
 
     // If we detect a backslash, prime the bool and skip to the next char.
-    if (!backslashed && c == '\\') {
+    if (!backslashed && c == '\\' && state != State::inside_single_quote) {
       backslashed = true;
       continue;
     }
