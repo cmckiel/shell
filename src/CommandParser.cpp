@@ -27,8 +27,15 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
   else if (std::string command_path; find_on_system(command, command_path)) {
     std::ostringstream full_command_with_args;
 
-    full_command_with_args << command << " ";
+    // Wrap command with approprate quotes
+    if (command.contains('\'')) {
+        full_command_with_args << "\"" << command << "\"" << " ";
+    }
+    else {
+        full_command_with_args << "\'" << command << "\'" << " ";
+    }
 
+    // Wrap each arg in appropriate quotes
     for (auto& arg : args) {
       if (arg.contains('\'')) {
         full_command_with_args << "\"" << arg << "\"" << " ";
