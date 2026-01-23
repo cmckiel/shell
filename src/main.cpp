@@ -12,6 +12,7 @@ int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
+  InputScanner scanner;
   CommandParser command_parser;
 
   while (1) {
@@ -22,7 +23,6 @@ int main() {
     std::getline(std::cin, input);
 
     // tokenize the input
-    InputScanner scanner;
     std::vector<std::string> input_tokens = scanner.scan(input);
 
     // parse the input and execute the command

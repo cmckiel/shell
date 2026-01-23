@@ -46,36 +46,53 @@ std::vector<std::string> InputScanner::scan(std::string input) {
   std::vector<std::string> tokens;
   State state = State::base;
 
+  bool backslashed = false;
+
   for (auto c : input) {
 
-    // If `c` caused a state transition, check which state
-    // we transitioned into.
-    if (transition_state(state, c)) {
-
-      // just transitioned to base state
-      if (state == State::base) {
-        // We just completed a valid token. Push it.
-        tokens.push_back(token);
-        token = "";
-        continue;
-      }
-
-      // The transition was not into a normal word, therefore
-      // skip this control character.
-      if (state != State::inside_word) {
-        continue;
-      }
+    // If we detect a backslash, prime the bool and skip to the next char.
+    if (!backslashed && c == '\\') {
+      backslashed = true;
+      continue;
     }
 
-    // Never add characters to a token in the base state.
-    if (state == State::base)
-      continue;
+    // If we're not backslashed, go ahead and process normally.
+    // Otherwise, if we are backslashed, add the character.
+    if (!backslashed) {
+      // If `c` caused a state transition, check which state
+      // we transitioned into.
+      if (transition_state(state, c)) {
+
+        // just transitioned to base state
+        if (state == State::base) {
+          // We just completed a valid token. Push it.
+          tokens.push_back(token);
+          token = "";
+          continue;
+        }
+
+        // The transition was not into a normal word, therefore
+        // skip this control character.
+        if (state != State::inside_word) {
+          continue;
+        }
+      }
+
+      // Never add characters to a token in the base state.
+      if (state == State::base)
+        continue;
+    }
 
     // If `c` did not cause a state transition and we're
     // not in the base state
     // then it is not a control character.
     // We should append it to `token`.
     token.push_back(c);
+
+    // Turn backslashed off after we add the character.
+    if (backslashed) {
+      backslashed = false;
+    }
   }
 
   // If token was not zero'd out, then
