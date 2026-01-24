@@ -34,4 +34,6 @@ class InputScanner {
     bool transition_state(State& state, char c);
 
     std::unordered_map<State, std::unordered_map<CharType, State>> transition_table;
+
+    std::string special_chars;
 };

@@ -39,6 +39,8 @@ InputScanner::InputScanner() {
       {CharType::other,        State::inside_word},
     }},
   };
+
+  special_chars = "\"\\$`n";
 }
 
 std::vector<std::string> InputScanner::scan(std::string input) {
@@ -83,6 +85,10 @@ std::vector<std::string> InputScanner::scan(std::string input) {
       // Never add characters to a token in the base state.
       if (state == State::base)
         continue;
+    }
+
+    if (state == State::inside_double_quote && backslashed && !special_chars.contains(c)) {
+      token.push_back('\\');
     }
 
     // If `c` did not cause a state transition and we're
