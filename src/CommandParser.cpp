@@ -2,6 +2,8 @@
 #include <iostream>
 #include <filesystem>
 #include <cstdlib>
+#include <unistd.h>
+#include <sys/wait.h>
 #include <sstream>
 
 #include "CommandParser.hpp"
@@ -25,27 +27,40 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
     command_handler->execute(args);
   }
   else if (std::string command_path; find_on_system(command, command_path)) {
-    std::ostringstream full_command_with_args;
+    // Construct a C-style argument vector in prep for execv() call
+    std::vector<char*> argv;
 
-    // Wrap command with approprate quotes
-    if (command.contains('\'')) {
-        full_command_with_args << "\"" << command << "\"" << " ";
+    // first arg of vector is always the program to execute.
+    // push a non-const c-string version of `command_path`
+    argv.push_back(const_cast<char*>(command_path.c_str()));
+
+    for (const auto& arg : args) {
+      // push a non-const c-string version into argv
+      argv.push_back(const_cast<char*>(arg.c_str()));
+    }
+    // The arg vector must be terminated with nullptr as per the execv api
+    argv.push_back(nullptr);
+
+    // Fork the process
+    pid_t pid = fork();
+
+    if (pid == -1) {
+      // failed to fork
+      std::cerr << "Failed to fork child process" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    else if (pid > 0) {
+      // parent
+      // pid is not zero, therefore we are in the parent process.
+      int status;
+      waitpid(pid, &status, 0);
     }
     else {
-        full_command_with_args << "\'" << command << "\'" << " ";
+      // child
+      // pid is zero, we are in child process, go ahead and exec the program.
+      execv(argv[0], argv.data());
+      exit(EXIT_FAILURE); // exec does not return
     }
-
-    // Wrap each arg in appropriate quotes
-    for (auto& arg : args) {
-      if (arg.contains('\'')) {
-        full_command_with_args << "\"" << arg << "\"" << " ";
-      }
-      else {
-        full_command_with_args << "\'" << arg << "\'" << " ";
-      }
-    }
-
-    std::system(full_command_with_args.str().c_str());
   }
   else {
     std::cout << command << ": command not found" << std::endl;
