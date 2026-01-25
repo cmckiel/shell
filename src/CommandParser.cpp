@@ -66,7 +66,7 @@ bool CommandParser::execute(const std::vector<std::string>& argv) {
 
     // first arg of vector is always the program to execute.
     // push a non-const c-string version of `command_path`
-    argv.push_back(const_cast<char*>(command_path.c_str()));
+    argv.push_back(const_cast<char*>(command.c_str()));
 
     for (const auto& arg : args) {
       // push a non-const c-string version into argv
@@ -111,7 +111,7 @@ bool CommandParser::execute(const std::vector<std::string>& argv) {
         close(fd);
       }
 
-      execv(argv[0], argv.data());
+      execvp(argv[0], argv.data());
       exit(EXIT_FAILURE); // exec does not return
     }
   }
