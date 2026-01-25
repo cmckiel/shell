@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <filesystem>
+#include <fcntl.h>
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -19,8 +20,29 @@ CommandParser::CommandParser() {
   shell_builtins_.emplace("cd", std::make_unique<CdCommand>());
 }
 
-bool CommandParser::execute(const std::string& command, const std::vector<std::string>& args) {
+bool CommandParser::execute(const std::vector<std::string>& argv) {
   bool res = true;
+
+  bool redirect = false;
+  std::string redirect_file_name;
+
+  if (argv.size() == 0) {
+    return false;
+  }
+
+  std::string command = argv[0];
+  std::vector<std::string> args(argv.begin() + 1, argv.end());
+
+  for (auto it = args.begin(); it != args.end(); ++it) {
+    if (*it == ">" || *it == "1>") {
+      redirect = true;
+      it++;
+      redirect_file_name = *it;
+      args.pop_back();
+      args.pop_back();
+      break;
+    }
+  }
 
   if (shell_builtins_.contains(command)) {
     auto& command_handler = shell_builtins_.at(command);
@@ -58,6 +80,25 @@ bool CommandParser::execute(const std::string& command, const std::vector<std::s
     else {
       // child
       // pid is zero, we are in child process, go ahead and exec the program.
+
+      // Handle output redirection in child process.
+      if (redirect) {
+        int fd = open(redirect_file_name.c_str(), O_WRONLY | O_CREAT, 0666);
+        if (fd == -1) {
+          std::cerr << "Failed to open file named: " << redirect_file_name << std::endl;
+          exit(EXIT_FAILURE);
+        }
+        // Assume we have an open file now.
+
+        int dup_fd = dup2(fd, STDOUT_FILENO);
+        if (dup_fd == -1) {
+          std::cerr << "Failed to redirect stdout" << std::endl;
+          exit(EXIT_FAILURE);
+        }
+
+        close(fd);
+      }
+
       execv(argv[0], argv.data());
       exit(EXIT_FAILURE); // exec does not return
     }

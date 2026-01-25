@@ -1,8 +1,6 @@
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <vector>
-#include <utility>
 
 #include "CommandParser.hpp"
 #include "InputScanner.hpp"
@@ -23,15 +21,9 @@ int main() {
     std::getline(std::cin, input);
 
     // tokenize the input
-    std::vector<std::string> input_tokens = scanner.scan(input);
+    std::vector<std::string> argv = scanner.scan(input);
 
-    // parse the input and execute the command
-    if (!input_tokens.empty()) {
-      // separate command and arguments
-      std::string command = input_tokens[0];
-      std::vector<std::string> args(input_tokens.begin() + 1, input_tokens.end());
-
-      command_parser.execute(command, args);
-    }
+    // execute the command
+    command_parser.execute(argv);
   }
 }

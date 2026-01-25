@@ -9,7 +9,7 @@
 class CommandParser {
   public:
     CommandParser();
-    bool execute(const std::string& command, const std::vector<std::string>& args);
+    bool execute(const std::vector<std::string>& argv);
     bool find_builtin(const std::string& command);
     bool find_on_system(const std::string& command, std::string& command_path);
   private:
