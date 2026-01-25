@@ -8,16 +8,16 @@
 
 namespace fs = std::filesystem;
 
-bool ExitCommand::execute(const std::vector<std::string>& args) {
+bool ExitCommand::execute(const std::vector<std::string>& args, std::ostream& oss) {
   exit(0);
   return false;
 }
 
-bool EchoCommand::execute(const std::vector<std::string>& args) {
+bool EchoCommand::execute(const std::vector<std::string>& args, std::ostream& oss) {
   for (const auto& arg : args) {
-    std::cout << arg << " ";
+    oss << arg << " ";
   }
-  std::cout << std::endl;
+  oss << std::endl;
 
   return true;
 }
@@ -26,20 +26,20 @@ TypeCommand::TypeCommand(CommandParser& parser)
   : command_parser_(parser) {
 }
 
-bool TypeCommand::execute(const std::vector<std::string>& args) {
+bool TypeCommand::execute(const std::vector<std::string>& args, std::ostream& oss) {
   bool res = false;
 
   if (!args.empty()) {
     std::string command_in_question = args[0];
 
     if (command_parser_.find_builtin(command_in_question)) {
-      std::cout << command_in_question << " is a shell builtin" << std::endl;
+      oss << command_in_question << " is a shell builtin" << std::endl;
     }
     else if (std::string command_path; command_parser_.find_on_system(command_in_question, command_path)) {
-      std::cout << command_in_question << " is " << command_path << std::endl;
+      oss << command_in_question << " is " << command_path << std::endl;
     }
     else {
-      std::cout << command_in_question << ": not found" << std::endl;
+      oss << command_in_question << ": not found" << std::endl;
     }
 
     res = true;
@@ -48,22 +48,22 @@ bool TypeCommand::execute(const std::vector<std::string>& args) {
   return res;
 }
 
-bool PwdCommand::execute(const std::vector<std::string>& args) {
+bool PwdCommand::execute(const std::vector<std::string>& args, std::ostream& oss) {
   bool res = true;
 
   try {
     fs::path current_dir = fs::current_path();
-    std::cout << current_dir.string() << std::endl;
+    oss << current_dir.string() << std::endl;
   }
   catch (std::exception& e) {
-    std::cout << "Error fetching current directory" << std::endl;
+    oss << "Error fetching current directory" << std::endl;
     res = false;
   }
 
   return res;
 }
 
-bool CdCommand::execute(const std::vector<std::string>& args) {
+bool CdCommand::execute(const std::vector<std::string>& args, std::ostream& oss) {
   bool res = true;
 
   std::string desired_working_dir = "";
@@ -87,7 +87,7 @@ bool CdCommand::execute(const std::vector<std::string>& args) {
     fs::current_path(desired_working_dir);
   }
   catch (std::exception& e) {
-    std::cout << "cd: " << desired_working_dir << ": No such file or directory" << std::endl;
+    oss << "cd: " << desired_working_dir << ": No such file or directory" << std::endl;
     res = false;
   }
 

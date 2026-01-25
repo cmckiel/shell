@@ -1,10 +1,12 @@
 #include <algorithm>
 #include <iostream>
 #include <filesystem>
+#include <fstream>
 #include <fcntl.h>
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <ostream>
 #include <sstream>
 
 #include "CommandParser.hpp"
@@ -46,7 +48,17 @@ bool CommandParser::execute(const std::vector<std::string>& argv) {
 
   if (shell_builtins_.contains(command)) {
     auto& command_handler = shell_builtins_.at(command);
-    command_handler->execute(args);
+
+    std::ostream* oss = &std::cout;
+
+    if (redirect) {
+      fs::path file_path {redirect_file_name};
+      std::ofstream ofs {file_path};
+      command_handler->execute(args, ofs);
+    }
+    else {
+      command_handler->execute(args, *oss);
+    }
   }
   else if (std::string command_path; find_on_system(command, command_path)) {
     // Construct a C-style argument vector in prep for execv() call
